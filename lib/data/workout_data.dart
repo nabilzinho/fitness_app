@@ -22,6 +22,18 @@ List<Workout> workoutList = [
             ),
         ] ,
 ),
+    Workout(
+        name: "Lower Body",
+        exercises: [
+            Exercise(
+                name: "Leg extension",
+                weight: "80kg",
+                reps: "10",
+                sets: "2"
+            ),
+        ] ,
+    ),
+
 ];
 
 // get the list of workouts
