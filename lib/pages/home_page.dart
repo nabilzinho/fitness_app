@@ -6,6 +6,7 @@
 
 
 import 'package:fitness_app/data/workout_data.dart';
+import 'package:fitness_app/pages/workout_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -50,7 +51,7 @@ class _HomePageState extends State<HomePage> {
   //goToWorkoutPage
   void goToWorkoutPage(String workoutName)
   {
-    Navigator.push(context, MaterialPageRoute(builder: (context)=>WorkoutPage(),));
+    Navigator.push(context, MaterialPageRoute(builder: (context)=>WorkoutPage(workoutName: workoutName,),));
   }
   //save function
   void save(){
@@ -89,7 +90,7 @@ class _HomePageState extends State<HomePage> {
           title: Text(value.getWorkoutList()[index].name),
           trailing: IconButton(
             icon: Icon(Icons.arrow_forward_ios),
-            onPressed: goToWorkoutPage,
+            onPressed: ()=>goToWorkoutPage(value.getWorkoutList()[index].name),
           ),
 
         ),
