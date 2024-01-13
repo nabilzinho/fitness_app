@@ -13,34 +13,139 @@ class WorkoutPage extends StatefulWidget {
 }
 
 class _WorkoutPageState extends State<WorkoutPage> {
+  void onCheckBoxChanged(String workoutName, String exerciseName) {
+    Provider.of<WorkoutData>(context, listen: false)
+        .checkOffExercise(workoutName, exerciseName);
+  }
+
+
+  // text controllers
+  final exerciseNameController = TextEditingController();
+  final weightController = TextEditingController();
+  final repsController = TextEditingController();
+  final setsController = TextEditingController();
+
+// create a new exercise
+  void createNewExercise() {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+        title: Text('Add a new exercise'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+          // exercise name
+          TextField(
+          controller: exerciseNameController,
+        ),
+      TextField(
+      controller: weightController,
+    ),
+      TextField(
+      controller: repsController,
+    ),
+    TextField(
+      controller: setsController,
+    )
+    ],
+    ),
+          actions: [
+
+            //save button
+            MaterialButton(
+              onPressed: save,
+              child:Text('save'),
+            ),
+
+
+            //cancel button
+            MaterialButton(
+              onPressed: cancel,
+              child:Text('cancel'),
+            )
+          ],
+        ),
+    );
+  }// TextField
+
+  void save(){
+    String newExerciseName=exerciseNameController.text;
+    String weight=weightController.text;
+    String reps=repsController.text;
+    String sets=setsController.text;
+
+    Provider.of<WorkoutData>(context,listen: false).addExercise(
+        widget.workoutName,
+        newExerciseName,
+        weight,
+        reps,
+        sets);
+    Navigator.pop(context);
+    exerciseNameController.clear();
+    weightController.clear();
+    repsController.clear();
+    setsController.clear();
+  }
+
+  //cancel function
+  void cancel(){
+    Navigator.pop(context);
+    exerciseNameController.clear();
+    weightController.clear();
+    repsController.clear();
+    setsController.clear();
+  }
+
+  //clear controller
+  void clear()
+  {
+    exerciseNameController.clear();
+    weightController.clear();
+    repsController.clear();
+    setsController.clear();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Consumer<WorkoutData>(
       builder: (context, value, child) => Scaffold(
         appBar: AppBar(title: Text(widget.workoutName)),
+        floatingActionButton: FloatingActionButton(
+          onPressed: createNewExercise,
+          child: Icon(Icons.add),
+        ), // FloatingActionButton
+
         body: ListView.builder(
           itemCount: value.numberOfExercisesInWorkout(widget.workoutName),
           itemBuilder: (context, index) => ExerciseTile(
-              exerciseName: value
-                  .getRelevantWorkout(widget.workoutName)
-                  .exercises[index]
-                  .name,
-              weight: value
-                  .getRelevantWorkout(widget.workoutName)
-                  .exercises[index]
-                  .weight,
-              reps: value
-                  .getRelevantWorkout(widget.workoutName)
-                  .exercises[index]
-                  .reps,
-              sets: value
-                  .getRelevantWorkout(widget.workoutName)
-                  .exercises[index]
-                  .sets,
-              isCompleted: value
-                  .getRelevantWorkout(widget.workoutName)
-                  .exercises[index]
-                  .isCompleted),
+            exerciseName: value
+                .getRelevantWorkout(widget.workoutName)
+                .exercises[index]
+                .name,
+            weight: value
+                .getRelevantWorkout(widget.workoutName)
+                .exercises[index]
+                .weight,
+            reps: value
+                .getRelevantWorkout(widget.workoutName)
+                .exercises[index]
+                .reps,
+            sets: value
+                .getRelevantWorkout(widget.workoutName)
+                .exercises[index]
+                .sets,
+            isCompleted: value
+                .getRelevantWorkout(widget.workoutName)
+                .exercises[index]
+                .isCompleted,
+            onCheckBoxChanged: (val) => onCheckBoxChanged(
+                widget.workoutName,
+                value
+                    .getRelevantWorkout(widget.workoutName)
+                    .exercises[index]
+                    .name),
+          ),
         ),
       ),
     );
