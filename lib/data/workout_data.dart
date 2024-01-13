@@ -1,3 +1,4 @@
+import 'package:fitness_app/data/hive_database.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../models/exercise.dart';
@@ -7,7 +8,7 @@ class WorkoutData extends ChangeNotifier {
   /*WORKOUT DATA STRUCTURE
   - This overall list contains the different workouts
   - Each workout has a name, and list of exercises*/
-
+final db=HiveDatabase();
 
 List<Workout> workoutList = [
     // default workout
@@ -36,6 +37,20 @@ List<Workout> workoutList = [
 
 ];
 
+//if datatbse empty use default list
+
+    void initalizeWorkout()
+    {
+        if(db.previousDataExists())
+            {
+                workoutList=db.readFromDatabase();
+            }
+        else
+        {
+            db.saveToDatabase(workoutList);
+        }
+    }
+
 // get the list of workouts
     List<Workout> getWorkoutList() {
         return workoutList;
@@ -53,6 +68,7 @@ List<Workout> workoutList = [
         // add a new workout with a blank list of exercises
         workoutList.add(Workout(name: name, exercises: []));
         notifyListeners();
+        db.saveToDatabase(workoutList);
     }
 // add an exercise to a workout
     void addExercise(String workoutName, String exerciseName, String weight, String reps, String sets)
@@ -68,6 +84,7 @@ List<Workout> workoutList = [
            ),
        );
        notifyListeners();
+       db.saveToDatabase(workoutList);
     }
     // check off exercise
     void checkOffExercise(String workoutName, String exerciseName) {
@@ -76,6 +93,7 @@ List<Workout> workoutList = [
         //check off boolean to show user exo is completed
         relevantExercise.isCompleted=!relevantExercise.isCompleted;
         notifyListeners();
+        db.saveToDatabase(workoutList);
     }
 
 // get length of a given workout
