@@ -2,9 +2,16 @@ import 'package:fitness_app/data/workout_data.dart';
 import 'package:fitness_app/pages/home_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async{
+  // Initialize hive
+  await Hive.initFlutter();
+// open a hive box
+  await Hive.openBox('workout_database');
+
   runApp(const MyApp());
 }
 
