@@ -1,99 +1,84 @@
 import 'package:fitness_app/data/hive_database.dart';
+import 'package:fitness_app/datetime/date_time.dart';
 import 'package:flutter/cupertino.dart';
 
 import '../models/exercise.dart';
 import '../models/workout.dart';
 
 class WorkoutData extends ChangeNotifier {
-  /*WORKOUT DATA STRUCTURE
-  - This overall list contains the different workouts
-  - Each workout has a name, and list of exercises*/
-final db=HiveDatabase();
+    final db = HiveDatabase();
 
-List<Workout> workoutList = [
-    // default workout
-    Workout(
-        name: "Upper Body",
-        exercises: [
-            Exercise(
-                name: "Bicep Curls",
-                weight: "10kg",
-                reps: "10",
-                sets: "3"
-            ),
-        ] ,
-),
-    Workout(
-        name: "Lower Body",
-        exercises: [
-            Exercise(
-                name: "Leg extension",
-                weight: "80kg",
-                reps: "10",
-                sets: "2"
-            ),
-        ] ,
-    ),
+    List<Workout> workoutList = [
+        Workout(
+            name: "Upper Body",
+            exercises: [
+                Exercise(
+                    name: "Bicep Curls",
+                    weight: "10kg",
+                    reps: "10",
+                    sets: "3",
+                ),
+            ],
+        ),
+        Workout(
+            name: "Lower Body",
+            exercises: [
+                Exercise(
+                    name: "Leg extension",
+                    weight: "80kg",
+                    reps: "10",
+                    sets: "2",
+                ),
+            ],
+        ),
+    ];
 
-];
-
-//if datatbse empty use default list
-
-    void initalizeWorkout()
-    {
-        if(db.previousDataExists())
-            {
-                workoutList=db.readFromDatabase();
-            }
-        else
-        {
+    void initalizeWorkout() {
+        if (db.previousDataExists()) {
+            workoutList = db.readFromDatabase();
+        } else {
             db.saveToDatabase(workoutList);
         }
+        loadHeatMap();
     }
 
-// get the list of workouts
     List<Workout> getWorkoutList() {
         return workoutList;
     }
 
-    // get length of a given workout
     int numberOfExercisesInWorkout(String workoutName) {
         Workout relevantWorkout = getRelevantWorkout(workoutName);
         return relevantWorkout.exercises.length;
     }
 
-
-// add a workout
     void addWorkout(String name) {
-        // add a new workout with a blank list of exercises
         workoutList.add(Workout(name: name, exercises: []));
         notifyListeners();
         db.saveToDatabase(workoutList);
     }
-// add an exercise to a workout
-    void addExercise(String workoutName, String exerciseName, String weight, String reps, String sets)
-    {
-       Workout relevantWorkout=getRelevantWorkout(workoutName);
-       // add an exercise to a workout
-       relevantWorkout.exercises.add(
-           Exercise(
-               name: exerciseName,
-               weight: weight,
-               reps: reps,
-               sets: sets,
-           ),
-       );
-       notifyListeners();
-       db.saveToDatabase(workoutList);
-    }
-    // check off exercise
-    void checkOffExercise(String workoutName, String exerciseName) {
-        // find the relevant workout and relevant exercise in that workout
-        Exercise relevantExercise=getRelevantExercise(workoutName, exerciseName);
-        //check off boolean to show user exo is completed
-        relevantExercise.isCompleted=!relevantExercise.isCompleted;
+
+    void addExercise(String workoutName, String exerciseName, String weight, String reps, String sets) {
+        Workout relevantWorkout = getRelevantWorkout(workoutName);
+
+        relevantWorkout.exercises.add(
+            Exercise(
+                name: exerciseName,
+                weight: weight,
+                reps: reps,
+                sets: sets,
+            ),
+        );
         notifyListeners();
         db.saveToDatabase(workoutList);
+    }
+
+    void checkOffExercise(String workoutName, String exerciseName) {
+        Exercise relevantExercise = getRelevantExercise(workoutName, exerciseName);
+
+        relevantExercise.isCompleted = !relevantExercise.isCompleted;
+        notifyListeners();
+        db.saveToDatabase(workoutList);
+        loadHeatMap();
     }
 
 // get length of a given workout
@@ -117,6 +102,26 @@ List<Workout> workoutList = [
     }
 
 
+    String getStartDate() {
+        return db.getStartDate();
+    }
 
+    Map<DateTime, int> heatMapDataset = {};
 
+    void loadHeatMap() {
+        DateTime startDate = createDateTimeObject(getStartDate());
+        int daysInBetween = DateTime.now().difference(startDate).inDays;
+
+        for (int i = 0; i < daysInBetween + 1; i++) {
+            String yyyymmdd = convertDateTimeToYYYYMMDD(startDate.add(Duration(days: i)));
+            int completionStatus = db.getCompletionStatus(yyyymmdd);
+            int year = startDate.add(Duration(days: i)).year;
+            int month = startDate.add(Duration(days: i)).month;
+            int day = startDate.add(Duration(days: i)).day;
+            final percentForEachDay = <DateTime, int>{
+                DateTime(year, month, day): completionStatus,
+            };
+            heatMapDataset.addEntries(percentForEachDay.entries);
+        }
+    }
 }

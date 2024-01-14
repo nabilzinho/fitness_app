@@ -5,10 +5,8 @@ import '../models/exercise.dart';
 import '../models/workout.dart';
 
 class HiveDatabase {
-  //reference hive box
   final _myBox = Hive.box("workout_database");
 
-// check if there is already data stored, if not, record the start date
   bool previousDataExists() {
     if (_myBox.isEmpty) {
       print("previous data does NOT exist");
@@ -20,15 +18,11 @@ class HiveDatabase {
     }
   }
 
-  //return startdate
-
   String getStartDate() {
-    return _myBox.get("START_DATE");
+    return _myBox.get("START DATE");
   }
 
-  //write data
   void saveToDatabase(List<Workout> workouts) {
-    //convert to string to save into hive
     final workoutList = convertObjectToWorkoutList(workouts);
     final exerciseList = convertObjectToExerciseList(workouts);
 
@@ -38,81 +32,56 @@ class HiveDatabase {
       _myBox.put("COMPLETION_STATUS${todaysDateYYYYMMDD()}", 0);
     }
 
-    //save into hive
     _myBox.put("WORKOUTS", workoutList);
     _myBox.put("EXERCISES", exerciseList);
   }
 
-  // read data, and return a list of workouts
   List<Workout> readFromDatabase() {
     List<Workout> mySavedWorkouts = [];
 
     List<String> workoutNames = _myBox.get("WORKOUTS");
     final exerciseDetails = _myBox.get("EXERCISES");
 
-// create workout objects
     for (int i = 0; i < workoutNames.length; i++) {
-      // each workout can have multiple exercises
       List<Exercise> exercisesInEachWorkout = [];
 
       for (int j = 0; j < exerciseDetails[i].length; j++) {
-        // so add each exercise into a list
         exercisesInEachWorkout.add(
           Exercise(
             name: exerciseDetails[i][j][0],
             weight: exerciseDetails[i][j][1],
             reps: exerciseDetails[i][j][2],
             sets: exerciseDetails[i][j][3],
-            isCompleted: exerciseDetails[i][j][4] == "true" ? true : false,
+            isCompleted: exerciseDetails[i][j][4] == "true",
           ),
         );
       }
-//create individual workout
-      Workout workout =
-          Workout(name: workoutNames[i], exercises: exercisesInEachWorkout);
-//add individual workout to overall list
+
+      Workout workout = Workout(name: workoutNames[i], exercises: exercisesInEachWorkout);
       mySavedWorkouts.add(workout);
     }
     return mySavedWorkouts;
   }
 
-// converts workout objects into a list -> eg. [ upperbody, lowerbody ]
   List<String> convertObjectToWorkoutList(List<Workout> workouts) {
-    List<String> workoutList = [
-      // eg. [ upperbody, lowerbody ]
-    ];
+    List<String> workoutList = [];
 
     for (int i = 0; i < workouts.length; i++) {
-      // in each workout, add the name, followed by lists of exercises
-      workoutList.add(
-        workouts[i].name,
-      );
+      workoutList.add(workouts[i].name);
     }
 
     return workoutList;
   }
 
-// converts the exercises in a workout object into a list of strings
   List<List<List<String>>> convertObjectToExerciseList(List<Workout> workouts) {
     List<List<List<String>>> exerciseList = [];
 
-// go through each workout
-
-// go through each workout
     for (int i = 0; i < workouts.length; i++) {
-      // get exercises from each workout
       List<Exercise> exercisesInWorkout = workouts[i].exercises;
+      List<List<String>> individualWorkout = [];
 
-      List<List<String>> individualWorkout = [
-        // Upper Body
-        // [biceps, 10kg, 10reps, 3sets], [triceps, 20kg, 10reps, 3sets]
-      ];
-
-      // go through each exercise in exerciseList
       for (int j = 0; j < exercisesInWorkout.length; j++) {
-        List<String> individualExercise = [
-          // [biceps, 10kg, 10reps, 3sets]
-        ];
+        List<String> individualExercise = [];
 
         individualExercise.addAll(
           [
@@ -130,11 +99,8 @@ class HiveDatabase {
     return exerciseList;
   }
 
-//check if any exercise have been done
   bool exerciseCompleted(List<Workout> workouts) {
-// go thru each workout
     for (var workout in workouts) {
-// go thru each exercise in workout
       for (var exercise in workout.exercises) {
         if (exercise.isCompleted) {
           return true;
@@ -144,12 +110,8 @@ class HiveDatabase {
     return false;
   }
 
-// return completion status of a given date yyyymmdd
-
-int getCompletionStatus(String yyyymmdd)
-{
-  //return 0 or 1,if null 0
-  int completionStatus=_myBox.get("COMPLETION_STATUS_$yyyymmdd") ?? 0;
-  return completionStatus;
-}
+  int getCompletionStatus(String yyyymmdd) {
+    int completionStatus = _myBox.get("COMPLETION_STATUS$yyyymmdd") ?? 0;
+    return completionStatus;
+  }
 }
